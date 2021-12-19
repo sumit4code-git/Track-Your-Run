@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.runtracker.R
+import com.example.runtracker.db.Run
 import com.example.runtracker.other.Constants.ACTION_PAUSE_SERVICE
 import com.example.runtracker.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.runtracker.other.Constants.ACTION_STOP_SERVICE
@@ -20,11 +21,15 @@ import com.example.runtracker.service.polyline
 import com.example.runtracker.ui.viewmodels.MainViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_tracking.*
+import java.lang.Math.round
+import java.util.*
 
 @AndroidEntryPoint
 //Whenever we need to inject something into android component(here its fragment) we use above notation
@@ -40,6 +45,7 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
     private var currTimeMilllis=0L
 
     private var menu: Menu?=null
+    private var weight =80f
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,6 +60,10 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
         mapView.onCreate(savedInstanceState)
         btnToggleRun.setOnClickListener {
             ToggleRun()
+        }
+        btnFinishRun.setOnClickListener{
+            zoomToSeeWholeTracking()
+            endRunAndSaveToDatabase()
         }
 //        async gets called whenever fragment created
         mapView.getMapAsync {
@@ -149,6 +159,43 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
                     MAP_ZOOM
                 )
             )
+        }
+    }
+//to ZoomOut And Save Run ScreenShot along WIth DAta to Database
+    private fun zoomToSeeWholeTracking(){
+        val bounds =LatLngBounds.Builder()
+        for(polyline in pathPoints){
+            for(pos in polyline){
+                bounds.include(pos)
+            }
+        }
+        map?.moveCamera(
+            CameraUpdateFactory.newLatLngBounds(
+                bounds.build(),
+                mapView.width,
+                mapView.height,
+                (mapView.height*0.05f).toInt()
+            )
+        )
+    }
+
+    private fun endRunAndSaveToDatabase(){
+        map?.snapshot {bmp->
+            var distanceInMeter=0
+            for (polyline in pathPoints){
+                distanceInMeter+=TrackingUtility.calculatePolylineLength(polyline) .toInt()
+            }
+            val avgSpeed=round((distanceInMeter/1000f)/(currTimeMilllis/1000f/60/60)*10)/10f
+            val dateTimeStamp=Calendar.getInstance().timeInMillis
+            val caloriesBurnt=((distanceInMeter/1000f)*weight) .toInt()
+            val run= Run(bmp,dateTimeStamp,avgSpeed,distanceInMeter,currTimeMilllis,caloriesBurnt)
+            viewModel.insertRun(run)
+            Snackbar.make(
+                requireActivity().findViewById(R.id.rootView),
+                "Saved Sucessfully",
+                Snackbar.LENGTH_LONG
+            ).show()
+            stopRun()
         }
     }
 //    also used to do same create polyline when screen is rotated
