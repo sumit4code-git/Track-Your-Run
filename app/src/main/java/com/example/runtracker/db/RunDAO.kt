@@ -10,7 +10,7 @@ interface RunDAO {
 
     @Delete
     suspend fun deleteRun(run: Run)
-//These are not suspend fun bcz we will use observe on live data and tat cant be in Courtine
+//These are not suspend fun bcz we will use observe on live data and that cant be in Coroutine
     @Query("SELECT * FROM running_table ORDER BY timestamp DESC")
     fun getAllRunsSortedByDate(): LiveData<List<Run>>
 
