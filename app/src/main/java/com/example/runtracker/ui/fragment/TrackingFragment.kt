@@ -32,7 +32,7 @@ import kotlinx.android.synthetic.main.fragment_tracking.*
 import java.lang.Math.round
 import java.util.*
 import javax.inject.Inject
-
+const val CANCEL_TRACKING_DIALOG_TAG="CancelDialog"
 @AndroidEntryPoint
 //Whenever we need to inject something into android component(here its fragment) we use above notation
 class TrackingFragment:Fragment(R.layout.fragment_tracking) {
@@ -67,6 +67,14 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
+        if (savedInstanceState!=null){
+//            to set yes listner when screen rotated while dialog is there on screen
+            val cancelTrackingDialog=parentFragmentManager.findFragmentByTag(CANCEL_TRACKING_DIALOG_TAG)
+            as cancelTrackingDialog?
+            cancelTrackingDialog?.setYesListner {
+                stopRun()
+            }
+        }
         btnToggleRun.setOnClickListener {
             ToggleRun()
         }
@@ -130,18 +138,11 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
         return super.onOptionsItemSelected(item)
     }
     private fun ShowCancelDialog(){
-        val dialog=MaterialAlertDialogBuilder(requireContext(),R.style.AlertDialogTheme)
-            .setTitle("Cancel The Run")
-            .setMessage("Are You Sure You Want To Delete the Current Run And Delete All its Data?")
-            .setPositiveButton("Yes"){_,_ ->
-                stopRun()
-            }
-            .setNegativeButton("NO"){dialogInterface,_ ->
-                dialogInterface.cancel()
-
-            }
-            .create()
-        dialog.show()
+       cancelTrackingDialog().apply {
+           setYesListner {
+               stopRun()
+           }
+       }.show(parentFragmentManager,CANCEL_TRACKING_DIALOG_TAG)
     }
     private fun stopRun(){
         sendCommandToService(ACTION_STOP_SERVICE)
@@ -150,10 +151,10 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
 //    observe data from our service and react to those changes
     private  fun updateTracking(isTracking:Boolean){
         this.isTracking=isTracking
-        if(!isTracking){
+        if(!isTracking && currTimeMilllis>0L){
             btnToggleRun.text="Start"
             btnFinishRun.visibility=View.VISIBLE
-        }else{
+        }else if(isTracking){
             btnToggleRun.text="Stop"
             menu?.getItem(0)?.isVisible=true
             btnFinishRun.visibility=View.GONE
