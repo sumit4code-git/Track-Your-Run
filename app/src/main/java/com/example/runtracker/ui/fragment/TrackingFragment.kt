@@ -27,6 +27,7 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.fragment_tracking.*
 import java.lang.Math.round
 import java.util.*
@@ -49,6 +50,8 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
 
     @set:Inject
     var weight =80f
+//    @set:Inject
+//    var name="User"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,11 +59,14 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
         savedInstanceState: Bundle?
     ): View? {
         setHasOptionsMenu(true)
+//        val toolBarText2="Let's Go,$name"
+//        view?.tvToolbarTitle?.text=toolBarText2
         return super.onCreateView(inflater, container, savedInstanceState)
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
+
         btnToggleRun.setOnClickListener {
             ToggleRun()
         }
