@@ -60,10 +60,12 @@ class RunAdapter : RecyclerView.Adapter<RunAdapter.RunViewHolder>(){
             val distanceInKm="${run.distanceInMeters / 1000f}km"
             tvDistance.text=distanceInKm
 
+            tvTime.text=TrackingUtility.getFormattedStopWatch(run.timeInMillis)
+
             val calorieBurnt="${run.caloriesBurned}kcal"
             tvCalories.text=calorieBurnt
 
-            tvTime.text=TrackingUtility.getFormattedStopWatch(run.timeInMillis)
+
         }
     }
 
