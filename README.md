@@ -17,12 +17,13 @@ Stay fit And Keep Track
 ### Stack Used
 1. Google Map     :  For Live Tracking 
 2. MVVM           :  Generalized Architecture Used 
-3. Bar Chart      :  Overview Runs
-4. Notification   :  To Control Current Run 
-5. Room Databse   :  To store User Favourite news
-6. Fragments      :  For Easy to view
-6. Spinner        :  To Sort Runs in Desired Format
-7. Recycler View  :  To show Previous In a list
+3. Dagger-Hilt    :  Dependency Injection
+4. Bar Chart      :  Overview Runs
+5. Notification   :  To Control Current Run 
+6. Room Databse   :  To store User Favourite news
+7. Fragments      :  For Easy to view
+8. Spinner        :  To Sort Runs in Desired Format
+9. Recycler View  :  To show Previous In a list
 ---
 ### Apk Link
 https://drive.google.com/file/d/1-dfsYJ9qk5pn0uCYu3e7S_wrVmLt6Yua/view?usp=sharing
