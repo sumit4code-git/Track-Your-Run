@@ -2,6 +2,7 @@ package com.example.runtracker.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -47,6 +48,7 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
     private var currTimeMilllis=0L
 
     private var menu: Menu?=null
+    private val TAG = "TrackingFragment"
 
     @set:Inject
     var weight =80f
@@ -221,6 +223,7 @@ class TrackingFragment:Fragment(R.layout.fragment_tracking) {
 //    use to connect two last points
 private fun addLatestPoylines(){
     if(pathPoints.isNotEmpty()&& pathPoints.last().size>1){
+        Log.d(TAG, "addLatestPoylines: "+pathPoints)
         val preLastLatlong=pathPoints.last()[pathPoints.last().size-2]
         val lastLatLng=pathPoints.last().last()
         val polylineOption=PolylineOptions()

@@ -11,6 +11,7 @@ import android.content.Intent
 import android.location.Location
 import android.os.Build
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -18,7 +19,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.runtracker.R
 import com.example.runtracker.other.Constants.ACTION_PAUSE_SERVICE
-import com.example.runtracker.other.Constants.ACTION_SHOW_TRACKING_FRAGMENT
 import com.example.runtracker.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.runtracker.other.Constants.ACTION_STOP_SERVICE
 import com.example.runtracker.other.Constants.FASTEST_LOCATION_INTERVAL
@@ -28,7 +28,6 @@ import com.example.runtracker.other.Constants.NOTIFICATION_CHANNEL_Name
 import com.example.runtracker.other.Constants.NOTIFICATION_ID
 import com.example.runtracker.other.Constants.TIMER_UPDATE_INTERVAL
 import com.example.runtracker.other.TrackingUtility
-import com.example.runtracker.ui.MainActivity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -56,6 +55,9 @@ class TrackingService : LifecycleService() {
     lateinit var baseNotificationBuilder:NotificationCompat.Builder
 
     lateinit var  curNotificationBuilder:NotificationCompat.Builder
+    private var previousLocationLng:Double= 0.0
+    private var previousLocationLat:Double=0.0
+    private  val TAG = "TrackingService"
     companion object{
         val timeRunInMillis=MutableLiveData<Long>()
         val isTracking= MutableLiveData<Boolean>()
@@ -168,6 +170,7 @@ private fun killService(){
     private fun postInitialValues(){
         isTracking.postValue(false)
         pathPoints.postValue(mutableListOf())
+    Log.d(TAG, "postInitialValues: "+ pathPoints)
         timeRunInSecond.postValue(0L)
         timeRunInMillis.postValue(0L)
     }
@@ -185,11 +188,12 @@ private fun killService(){
                     fastestInterval=FASTEST_LOCATION_INTERVAL
                     priority=PRIORITY_HIGH_ACCURACY
                 }
-                fusedLocationProviderClient.requestLocationUpdates(
+               var tt=fusedLocationProviderClient.requestLocationUpdates(
                     request,
                     locationCallback,
                     Looper.getMainLooper()
                 )
+                Log.d(TAG, "updateLocationTracking: "+tt)
             }
         }else{
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
@@ -201,9 +205,16 @@ private fun killService(){
         super.onLocationResult(p0)
         if (isTracking.value!!) {
             p0?.locations?.let { locations ->
+//                Log.d(TAG, "subttarct "+previousLocation.minus(locations.get(0).latitude))
                 for (location in locations) {
-                    addPathPoint(location)
-                    Timber.d("NEW_LOCATION: ${location.latitude},${location.longitude}")
+                if (previousLocationLng ==0.0 || location.latitude.minus(previousLocationLat)!=0.0 ) {
+                    if(location.longitude.minus(previousLocationLng)!=0.0 ) {
+                        addPathPoint(location)
+                        previousLocationLng = location.longitude
+                        previousLocationLat = location.longitude
+                        Timber.d("NEW_LOCATION: ${location.latitude},${location.longitude}")
+                    }
+                        }
                 }
             }
         }
